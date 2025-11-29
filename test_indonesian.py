@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 import time
 
-# --- 1. GLOBAL AUDIO SETUP ---
+# --- 1. SETUP AUDIO GLOBAL ---
 mixer.init()
 
 
@@ -35,36 +35,33 @@ def load_sfx():
 bounce_sound, score_sound, win_sound = load_sfx()
 
 
-# --- 2. GAME LAUNCHER (INPUT MENU) ---
+# --- 2. GAME LAUNCHER (MENU INPUT) ---
 def run_launcher(master_root, is_first_run):
-    # [PERBAIKAN DI SINI]
-    # Hanya putar musik jika ini adalah pertama kali program dijalankan.
-    # Jika user main lagi (restart), lewati baris ini agar musik tidak reset.
-    if is_first_run:
-        play_music()
+    play_music()
 
-    # Default data (if user cancels)
-    setup_data = {"p1": "Player A", "p2": "Player B", "score": 5, "level": "medium", "ready": False}
+    # Default data (jika user cancel)
+    setup_data = {"p1": "Pemain A", "p2": "Pemain B", "score": 5, "level": "sedang", "ready": False}
 
-    # --- HELPER FUNCTION: ASK FOR INPUT (ENGLISH) ---
+    # --- FUNGSI PEMBANTU: UNTUK MINTA INPUT (BAHASA INDONESIA) ---
     def ask_player_data(parent_window):
-        p1 = simpledialog.askstring("Setup", "Player A Name (Left):", parent=parent_window)
+        p1 = simpledialog.askstring("Pengaturan", "Nama Pemain A (Kiri):", parent=parent_window)
         if p1: setup_data["p1"] = p1
 
-        p2 = simpledialog.askstring("Setup", "Player B Name (Right):", parent=parent_window)
+        p2 = simpledialog.askstring("Pengaturan", "Nama Pemain B (Kanan):", parent=parent_window)
         if p2: setup_data["p2"] = p2
 
-        s = simpledialog.askinteger("Setup", "Winning Score (1-20):", parent=parent_window, minvalue=1, maxvalue=20)
+        s = simpledialog.askinteger("Pengaturan", "Skor Kemenangan (1-20):", parent=parent_window, minvalue=1,
+                                    maxvalue=20)
         if s: setup_data["score"] = s
 
-        l = simpledialog.askstring("Setup", "Difficulty Level (easy/medium/hard):", parent=parent_window)
+        l = simpledialog.askstring("Pengaturan", "Tingkat Kesulitan (1: mudah, 2: sedang, 3: sulit):", parent=parent_window)
         if l: setup_data["level"] = l
 
         setup_data["ready"] = True
 
-    # --- BRANCH LOGIC ---
+    # --- LOGIKA CABANG ---
     if not is_first_run:
-        # IF RESTART: Skip title screen, ask input directly
+        # JIKA RESTART: Langsung input tanpa judul
         dummy_win = tk.Toplevel(master_root)
         dummy_win.withdraw()
         ask_player_data(dummy_win)
@@ -72,9 +69,9 @@ def run_launcher(master_root, is_first_run):
         return setup_data
 
     else:
-        # IF FIRST RUN: Show Title Window
+        # JIKA PERTAMA KALI: Tampilkan Window Judul
         launcher_win = tk.Toplevel(master_root)
-        launcher_win.title("The Pong Game")
+        launcher_win.title("Menu Utama Pong")
 
         w, h = 400, 300
         ws, hs = launcher_win.winfo_screenwidth(), launcher_win.winfo_screenheight()
@@ -88,11 +85,10 @@ def run_launcher(master_root, is_first_run):
         launcher_win.after_idle(launcher_win.attributes, '-topmost', False)
         launcher_win.focus_force()
 
-        lbl_title = tk.Label(launcher_win, text="THE PONG GAME", font=("Press Start 2P", 20, "bold"), bg="black", fg="white")
+        lbl_title = tk.Label(launcher_win, text="THE PONG GAME", font=("Courier", 30, "bold"), bg="black", fg="white")
         lbl_title.pack(pady=(40, 10))
 
-        lbl_sub = tk.Label(launcher_win, text="Developed with love by E4 Group", font=("Press Start 2P", 6), bg="black",
-                           fg="#acacac")
+        lbl_sub = tk.Label(launcher_win, text="Edisi Retro oleh E4", font=("Courier", 12), bg="black", fg="#acacac")
         lbl_sub.pack(pady=(0, 40))
 
         def on_start():
@@ -100,7 +96,7 @@ def run_launcher(master_root, is_first_run):
             ask_player_data(launcher_win)
             launcher_win.destroy()
 
-        btn = tk.Button(launcher_win, text="Start Game", font=("Press Start 2P", 12, "bold"), command=on_start, width=15)
+        btn = tk.Button(launcher_win, text="MULAI MAIN", font=("Courier", 14, "bold"), command=on_start, width=15)
         btn.pack(pady=20)
 
         def on_close():
@@ -114,23 +110,23 @@ def run_launcher(master_root, is_first_run):
         return setup_data
 
 
-# --- 3. LEVEL LOGIC (ENGLISH INPUTS) ---
+# --- 3. LOGIKA LEVEL (BAHASA INDONESIA) ---
 def get_level_settings(choice):
-    # Check input: accepts numbers (1/3) or text (easy/medium/hard)
-    c = choice.lower() if choice else "medium"
+    # Cek input: bisa angka (1/3) atau teks (easy/mudah/hard/sulit)
+    c = choice.lower() if choice else "sedang"
 
-    if c in ["1", "easy"]:
-        return "EASY", [-0.15, -0.1, 0.1, 0.15], 0.15, 0.5
+    if c in ["1", "easy", "mudah"]:
+        return "MUDAH", [-0.15, -0.1, 0.1, 0.15], 0.15, 0.5
 
-    elif c in ["3", "hard"]:
-        return "HARD", [-0.4, -0.3, 0.3, 0.4], 0.35, 0.9
+    elif c in ["3", "hard", "sulit"]:
+        return "SULIT", [-0.4, -0.3, 0.3, 0.4], 0.35, 0.9
 
     else:
-        # Default to MEDIUM
-        return "MEDIUM", [-0.25, -0.2, 0.2, 0.25], 0.25, 0.7
+        # Default ke SEDANG
+        return "SEDANG", [-0.25, -0.2, 0.2, 0.25], 0.25, 0.7
 
 
-# --- 4. GAME ENGINE ---
+# --- 4. ENGINE PERMAINAN ---
 def start_game_session(window, config):
     p1_name = config["p1"][:10]
     p2_name = config["p2"][:10]
@@ -147,7 +143,7 @@ def start_game_session(window, config):
     root = canvas.winfo_toplevel()
     root.resizable(False, False)
 
-    # Game Objects
+    # Objek Game
     leftpaddle = t.Turtle("square")
     leftpaddle.speed(0);
     leftpaddle.color("#acacac");
@@ -185,7 +181,7 @@ def start_game_session(window, config):
     game_over_pen.penup();
     game_over_pen.hideturtle()
 
-    # Keyboard Controls
+    # Kontrol Keyboard
     def lp_up():
         leftpaddle.dy = paddle_spd
 
@@ -219,24 +215,24 @@ def start_game_session(window, config):
     playing = True
     winner = ""
 
-    # GAME LOOP
+    # LOOP GAME
     while playing:
         try:
             window.update()
         except:
             return False
 
-            # Movement
+            # Gerakan
         if -240 < leftpaddle.ycor() + leftpaddle.dy < 250: leftpaddle.sety(leftpaddle.ycor() + leftpaddle.dy)
         if -240 < rightpaddle.ycor() + rightpaddle.dy < 250: rightpaddle.sety(rightpaddle.ycor() + rightpaddle.dy)
         ball.setx(ball.xcor() + ball.dx)
         ball.sety(ball.ycor() + ball.dy)
 
-        # Borders
+        # Border
         if ball.ycor() > 290: ball.sety(290); ball.dy *= -1; bounce_sound.play()
         if ball.ycor() < -290: ball.sety(-290); ball.dy *= -1; bounce_sound.play()
 
-        # Scoring
+        # Skor
         if ball.xcor() > 390:
             ball.goto(0, 0);
             ball.dx = -base_dx;
@@ -259,7 +255,7 @@ def start_game_session(window, config):
                       font=("VT323", 24, "normal"))
             if score_b >= max_score: winner = p2_name; playing = False
 
-        # Collisions
+        # Tabrakan
         if (340 < ball.xcor() < 350) and (rightpaddle.ycor() - 50 < ball.ycor() < rightpaddle.ycor() + 50):
             ball.setx(340);
             ball.dx *= -1;
@@ -269,22 +265,21 @@ def start_game_session(window, config):
             ball.dx *= -1;
             bounce_sound.play()
 
-    # --- GAME OVER (ENGLISH) ---
-    ball.hideturtle()  # <--- [BARU] Sembunyikan bola saat game selesai
+    # --- GAME SELESAI (BAHASA INDONESIA) ---
     win_sound.play()
-    game_over_pen.write(f"VICTORY!\n{winner} Wins!", align="center", font=("Press Start 2P", 18, "bold"))
+    game_over_pen.write(f"MENANG!\n{winner} Juara!", align="center", font=("Press Start 2P", 18, "bold"))
 
     window.update()
     time.sleep(5)
 
-    retry = messagebox.askyesno("Game Over", f"Congratulations {winner}!\n\nDo you want to play again?")
+    retry = messagebox.askyesno("Permainan Selesai", f"Selamat {winner} Menang!\n\nIngin main lagi?")
     return retry
 
 
 # --- 5. MAIN PROGRAM ---
 def main():
     window = t.Screen()
-    window.title("Loading...")
+    window.title("Memuat...")
 
     root_tk = window.getcanvas().winfo_toplevel()
 
