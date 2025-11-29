@@ -1,22 +1,21 @@
 import turtle as t
 import random
 from pygame import mixer
+import sys  # [BARU] Tambahkan ini untuk exit yang bersih
 
 # --- 1. SETUP AUDIO (MUSIK & SFX) ---
 mixer.init()
 
 # A. Background Music
 try:
-    # Ganti path sesuai lokasi filemu
     mixer.music.load(r"music_background.mp3")
-    mixer.music.set_volume(0.5)  # Volume musik background (0.0 - 1.0)
+    mixer.music.set_volume(0.5)
     mixer.music.play(-1)
 except Exception as e:
     print(f"Musik tidak ditemukan: {e}")
 
 # B. Sound Effects (SFX)
 try:
-    # Pastikan file ada di folder yang sama
     bounce_sound = mixer.Sound(r"bounce.mp3")
     score_sound = mixer.Sound(r"score.mp3")
     win_sound = mixer.Sound(r"win.mp3")
@@ -25,7 +24,7 @@ try:
     score_sound.set_volume(1.0)
     win_sound.set_volume(1.0)
 except Exception as e:
-    print(f"File SFX tidak ditemukan ({e}). Game berjalan hening.")
+    print(f"File SFX error: {e}")
 
 
     class DummySound:
@@ -36,7 +35,7 @@ except Exception as e:
     score_sound = DummySound()
     win_sound = DummySound()
 
-# --- 2. SETUP GAME ---
+# --- 2. SETUP GAME & WINDOW ---
 playerA_score = 0
 playerB_score = 0
 max_score = 5
@@ -47,6 +46,24 @@ window.title("The Pong Game by E4")
 window.bgcolor("black")
 window.setup(width=800, height=600)
 window.tracer(0)
+
+# Kunci Ukuran Window (Matikan Maximize)
+canvas = window.getcanvas()
+root = canvas.winfo_toplevel()
+root.resizable(False, False)
+
+# --- [BARU] FUNGSI INPUT NAMA ---
+# Kita coba ambil nama. Jika window diclose saat input, program exit aman.
+try:
+    p1_name = window.textinput("Game Setup", "Masukkan Nama Player A (Kiri):") or "Player A"
+    p2_name = window.textinput("Game Setup", "Masukkan Nama Player B (Kanan):") or "Player B"
+except:
+    # Jika user menutup window saat dimintai nama
+    print("Program ditutup saat input nama.")
+    sys.exit()
+
+p1_name = p1_name[:10]
+p2_name = p2_name[:10]
 
 # --- PADDLES ---
 leftpaddle = t.Turtle()
@@ -88,7 +105,7 @@ pen.color("#acacac")
 pen.penup()
 pen.hideturtle()
 pen.goto(0, 260)
-pen.write("Player A: 0          Player B: 0", align="center", font=("VT323", 24, "normal"))
+pen.write(f"{p1_name}: 0          {p2_name}: 0", align="center", font=("VT323", 24, "normal"))
 
 # --- PENULIS GAME OVER ---
 game_over_pen = t.Turtle()
@@ -130,12 +147,20 @@ window.onkeyrelease(rightpaddle_stop, "Down")
 
 # --- LOOP UTAMA ---
 while True:
-    window.update()
+    # [PERBAIKAN UTAMA DI SINI]
+    try:
+        window.update()
+    except Exception:
+        # Jika window ditutup (error update), jalankan ini:
+        print("Window ditutup. Mematikan program...")
+        mixer.music.stop()  # Matikan musik
+        mixer.quit()  # Matikan mixer pygame
+        break  # Hentikan loop while True (Program Selesai)
 
     if not game_on:
         continue
 
-    # Gerakan Paddle (Smooth)
+    # Gerakan Paddle
     left_next_y = leftpaddle.ycor() + leftpaddle.dy
     if -240 < left_next_y < 250:
         leftpaddle.sety(left_next_y)
@@ -148,7 +173,7 @@ while True:
     ball.setx(ball.xcor() + ball_dx)
     ball.sety(ball.ycor() + ball_dy)
 
-    # --- LOGIKA PANTULAN DINDING ---
+    # Pantulan Dinding
     if ball.ycor() > 290:
         ball.sety(290)
         ball_dy *= -1
@@ -159,7 +184,7 @@ while True:
         ball_dy *= -1
         bounce_sound.play()
 
-    # --- LOGIKA SKOR (KANAN) ---
+    # SKOR (KANAN)
     if ball.xcor() > 390:
         ball.goto(0, 0)
         ball_dx = -1 * random.choice([0.2, 0.25, 0.3])
@@ -168,18 +193,16 @@ while True:
         score_sound.play()
         playerA_score += 1
         pen.clear()
-        pen.write(f"Player A: {playerA_score}          Player B: {playerB_score}",
+        pen.write(f"{p1_name}: {playerA_score}          {p2_name}: {playerB_score}",
                   align="center", font=("VT323", 24, "normal"))
 
-        # LOGIKA MENANG PLAYER A
         if playerA_score == max_score:
             game_on = False
-            # mixer.music.stop() <--- BARIS INI SAYA HAPUS/KOMENTAR
             win_sound.play()
-            game_over_pen.write("Selamat, Player A menang!",
+            game_over_pen.write(f"Selamat, {p1_name} menang!",
                                 align="center", font=("Press Start 2P", 14, "bold"))
 
-    # --- LOGIKA SKOR (KIRI) ---
+    # SKOR (KIRI)
     if ball.xcor() < -390:
         ball.goto(0, 0)
         ball_dx = 1 * random.choice([0.2, 0.25, 0.3])
@@ -188,18 +211,16 @@ while True:
         score_sound.play()
         playerB_score += 1
         pen.clear()
-        pen.write(f"Player A: {playerA_score}          Player B: {playerB_score}",
+        pen.write(f"{p1_name}: {playerA_score}          {p2_name}: {playerB_score}",
                   align="center", font=("VT323", 24, "normal"))
 
-        # LOGIKA MENANG PLAYER B
         if playerB_score == max_score:
             game_on = False
-            # mixer.music.stop() <--- BARIS INI SAYA HAPUS/KOMENTAR
             win_sound.play()
-            game_over_pen.write("Selamat, Player B menang!",
+            game_over_pen.write(f"Selamat, {p2_name} menang!",
                                 align="center", font=("Press Start 2P", 14, "bold"))
 
-    # --- LOGIKA PANTULAN PADDLE ---
+    # Pantulan Paddle
     if (340 < ball.xcor() < 350) and \
             (rightpaddle.ycor() - 50 < ball.ycor() < rightpaddle.ycor() + 50):
         ball.setx(340)

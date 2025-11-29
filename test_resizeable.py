@@ -1,32 +1,24 @@
 import turtle as t
 import random
 from pygame import mixer
-import sys  # [BARU] Tambahkan ini untuk exit yang bersih
 
-# --- 1. SETUP AUDIO (MUSIK & SFX) ---
+# --- 1. SETUP AUDIO ---
 mixer.init()
-
-# A. Background Music
 try:
     mixer.music.load(r"music_background.mp3")
     mixer.music.set_volume(0.5)
     mixer.music.play(-1)
-except Exception as e:
-    print(f"Musik tidak ditemukan: {e}")
+except:
+    pass
 
-# B. Sound Effects (SFX)
 try:
     bounce_sound = mixer.Sound(r"bounce.mp3")
     score_sound = mixer.Sound(r"score.mp3")
     win_sound = mixer.Sound(r"win.mp3")
-
     bounce_sound.set_volume(1.0)
     score_sound.set_volume(1.0)
     win_sound.set_volume(1.0)
-except Exception as e:
-    print(f"File SFX error: {e}")
-
-
+except:
     class DummySound:
         def play(self): pass
 
@@ -35,35 +27,23 @@ except Exception as e:
     score_sound = DummySound()
     win_sound = DummySound()
 
-# --- 2. SETUP GAME & WINDOW ---
+# --- 2. SETUP VARIABEL & WINDOW ---
 playerA_score = 0
 playerB_score = 0
 max_score = 5
 game_on = True
 
 window = t.Screen()
-window.title("The Pong Game by E4")
+window.title("The Pong Game - Final Responsive Fix")
 window.bgcolor("black")
 window.setup(width=800, height=600)
 window.tracer(0)
 
-# Kunci Ukuran Window (Matikan Maximize)
+# Aktifkan Resize
 canvas = window.getcanvas()
 root = canvas.winfo_toplevel()
-root.resizable(False, False)
-
-# --- [BARU] FUNGSI INPUT NAMA ---
-# Kita coba ambil nama. Jika window diclose saat input, program exit aman.
-try:
-    p1_name = window.textinput("Game Setup", "Masukkan Nama Player A (Kiri):") or "Player A"
-    p2_name = window.textinput("Game Setup", "Masukkan Nama Player B (Kanan):") or "Player B"
-except:
-    # Jika user menutup window saat dimintai nama
-    print("Program ditutup saat input nama.")
-    sys.exit()
-
-p1_name = p1_name[:10]
-p2_name = p2_name[:10]
+root.resizable(True, True)
+root.minsize(600, 400)
 
 # --- PADDLES ---
 leftpaddle = t.Turtle()
@@ -72,7 +52,6 @@ leftpaddle.shape("square")
 leftpaddle.color("#acacac")
 leftpaddle.shapesize(stretch_wid=5, stretch_len=1)
 leftpaddle.penup()
-leftpaddle.goto(-350, 0)
 leftpaddle.dy = 0
 
 rightpaddle = t.Turtle()
@@ -81,10 +60,9 @@ rightpaddle.shape("square")
 rightpaddle.color("#acacac")
 rightpaddle.shapesize(stretch_wid=5, stretch_len=1)
 rightpaddle.penup()
-rightpaddle.goto(350, 0)
 rightpaddle.dy = 0
 
-paddle_speed = 0.8
+paddle_speed = 1.2
 
 # --- BOLA ---
 ball = t.Turtle()
@@ -93,10 +71,8 @@ ball.shape("circle")
 ball.color("#acacac")
 ball.penup()
 ball.goto(0, 0)
-
-speeds = [-0.35, -0.25, -0.15, 0.15, 0.25, 0.35]
-ball_dx = random.choice([0.25, -0.25])
-ball_dy = random.choice(speeds)
+ball_dx = 0.4
+ball_dy = 0.4
 
 # --- PENULIS SKOR ---
 pen = t.Turtle()
@@ -105,15 +81,13 @@ pen.color("#acacac")
 pen.penup()
 pen.hideturtle()
 pen.goto(0, 260)
-pen.write(f"{p1_name}: 0          {p2_name}: 0", align="center", font=("VT323", 24, "normal"))
+pen.write("Player A: 0          Player B: 0", align="center", font=("VT323", 24, "normal"))
 
-# --- PENULIS GAME OVER ---
 game_over_pen = t.Turtle()
 game_over_pen.speed(0)
 game_over_pen.color("#acacac")
 game_over_pen.penup()
 game_over_pen.hideturtle()
-game_over_pen.goto(0, 0)
 
 
 # --- FUNGSI INPUT ---
@@ -145,90 +119,117 @@ window.onkeyrelease(leftpaddle_stop, "s")
 window.onkeyrelease(rightpaddle_stop, "Up")
 window.onkeyrelease(rightpaddle_stop, "Down")
 
+# Variabel pelacak ukuran layar
+last_win_width = window.window_width()
+last_win_height = window.window_height()
+
+
+# Fungsi KHUSUS UI (Hanya Skor)
+def update_score_position(h):
+    pen.clear()
+    pen.goto(0, (h / 2) - 40)
+    pen.write(f"Player A: {playerA_score}          Player B: {playerB_score}",
+              align="center", font=("VT323", 24, "normal"))
+
+
+# Panggil sekali di awal
+update_score_position(last_win_height)
+
 # --- LOOP UTAMA ---
 while True:
-    # [PERBAIKAN UTAMA DI SINI]
-    try:
-        window.update()
-    except Exception:
-        # Jika window ditutup (error update), jalankan ini:
-        print("Window ditutup. Mematikan program...")
-        mixer.music.stop()  # Matikan musik
-        mixer.quit()  # Matikan mixer pygame
-        break  # Hentikan loop while True (Program Selesai)
+    window.update()
+
+    # Ambil ukuran layar saat ini
+    current_w = window.window_width()
+    current_h = window.window_height()
+    w_half = current_w / 2
+    h_half = current_h / 2
+
+    # --- PERBAIKAN: Update Posisi Paddle SETIAP FRAME ---
+    # Ini memastikan paddle selalu "menempel" di pinggir, mau di-resize secepat apapun
+    leftpaddle.setx(-(w_half - 50))
+    rightpaddle.setx(w_half - 50)
+
+    # --- Optimasi Skor ---
+    # Update posisi teks skor HANYA jika ukuran layar berubah (biar gak berat)
+    if current_w != last_win_width or current_h != last_win_height:
+        last_win_width = current_w
+        last_win_height = current_h
+        update_score_position(current_h)
 
     if not game_on:
         continue
 
-    # Gerakan Paddle
+    # --- GERAKAN PADDLE (Y-Axis) ---
     left_next_y = leftpaddle.ycor() + leftpaddle.dy
-    if -240 < left_next_y < 250:
+    if -(h_half - 60) < left_next_y < (h_half - 60):
         leftpaddle.sety(left_next_y)
 
     right_next_y = rightpaddle.ycor() + rightpaddle.dy
-    if -240 < right_next_y < 250:
+    if -(h_half - 60) < right_next_y < (h_half - 60):
         rightpaddle.sety(right_next_y)
 
-    # Gerakan Bola
+    # --- GERAKAN BOLA ---
     ball.setx(ball.xcor() + ball_dx)
     ball.sety(ball.ycor() + ball_dy)
 
     # Pantulan Dinding
-    if ball.ycor() > 290:
-        ball.sety(290)
+    if ball.ycor() > (h_half - 10):
+        ball.sety(h_half - 10)
         ball_dy *= -1
         bounce_sound.play()
 
-    if ball.ycor() < -290:
-        ball.sety(-290)
+    if ball.ycor() < -(h_half - 10):
+        ball.sety(-(h_half - 10))
         ball_dy *= -1
         bounce_sound.play()
 
-    # SKOR (KANAN)
-    if ball.xcor() > 390:
+    # --- SKOR / GOL ---
+    if ball.xcor() > (w_half - 10):  # Gol Kanan
         ball.goto(0, 0)
-        ball_dx = -1 * random.choice([0.2, 0.25, 0.3])
-        ball_dy = random.choice(speeds)
-
+        ball_dx = -1 * random.choice([0.3, 0.4, 0.5])
+        ball_dy = random.choice([-0.4, 0.4])
         score_sound.play()
+
         playerA_score += 1
+        # Update skor visual
         pen.clear()
-        pen.write(f"{p1_name}: {playerA_score}          {p2_name}: {playerB_score}",
+        pen.goto(0, (h_half - 40))
+        pen.write(f"Player A: {playerA_score}          Player B: {playerB_score}",
                   align="center", font=("VT323", 24, "normal"))
 
         if playerA_score == max_score:
             game_on = False
             win_sound.play()
-            game_over_pen.write(f"Selamat, {p1_name} menang!",
-                                align="center", font=("Press Start 2P", 14, "bold"))
+            game_over_pen.write("Selamat, Player A menang!", align="center", font=("Press Start 2P", 14, "bold"))
 
-    # SKOR (KIRI)
-    if ball.xcor() < -390:
+    if ball.xcor() < -(w_half - 10):  # Gol Kiri
         ball.goto(0, 0)
-        ball_dx = 1 * random.choice([0.2, 0.25, 0.3])
-        ball_dy = random.choice(speeds)
-
+        ball_dx = 1 * random.choice([0.3, 0.4, 0.5])
+        ball_dy = random.choice([-0.4, 0.4])
         score_sound.play()
+
         playerB_score += 1
+        # Update skor visual
         pen.clear()
-        pen.write(f"{p1_name}: {playerA_score}          {p2_name}: {playerB_score}",
+        pen.goto(0, (h_half - 40))
+        pen.write(f"Player A: {playerA_score}          Player B: {playerB_score}",
                   align="center", font=("VT323", 24, "normal"))
 
         if playerB_score == max_score:
             game_on = False
             win_sound.play()
-            game_over_pen.write(f"Selamat, {p2_name} menang!",
-                                align="center", font=("Press Start 2P", 14, "bold"))
+            game_over_pen.write("Selamat, Player B menang!", align="center", font=("Press Start 2P", 14, "bold"))
 
-    # Pantulan Paddle
-    if (340 < ball.xcor() < 350) and \
-            (rightpaddle.ycor() - 50 < ball.ycor() < rightpaddle.ycor() + 50):
-        ball.setx(340)
-        ball_dx *= -1
+    # --- TABRAKAN PADDLE ---
+    if (ball.xcor() > rightpaddle.xcor() - 20) and (ball.xcor() < rightpaddle.xcor() + 20) and \
+            (ball.ycor() < rightpaddle.ycor() + 60) and (ball.ycor() > rightpaddle.ycor() - 60):
+        ball.setx(rightpaddle.xcor() - 20)
+        ball_dx *= -1.05
         bounce_sound.play()
 
-    if (-350 < ball.xcor() < -340) and \
-            (leftpaddle.ycor() - 50 < ball.ycor() < leftpaddle.ycor() + 50):
-        ball.setx(-340)
-        ball_dx *= -1
+    if (ball.xcor() < leftpaddle.xcor() + 20) and (ball.xcor() > leftpaddle.xcor() - 20) and \
+            (ball.ycor() < leftpaddle.ycor() + 60) and (ball.ycor() > leftpaddle.ycor() - 60):
+        ball.setx(leftpaddle.xcor() + 20)
+        ball_dx *= -1.05
         bounce_sound.play()
