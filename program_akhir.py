@@ -91,7 +91,7 @@ def run_launcher(master_root, is_first_run):
         lbl_title = tk.Label(launcher_win, text="THE PONG GAME", font=("Press Start 2P", 20, "bold"), bg="black", fg="white")
         lbl_title.pack(pady=(40, 10))
 
-        lbl_sub = tk.Label(launcher_win, text="Developed with love by E4 Group", font=("Press Start 2P", 6), bg="black",
+        lbl_sub = tk.Label(launcher_win, text="Developed with love by E4 Group", font=("Press Start 2P", 7), bg="black",
                            fg="#acacac")
         lbl_sub.pack(pady=(0, 40))
 
