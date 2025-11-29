@@ -5,16 +5,16 @@ from pygame import mixer
 # --- 1. SETUP AUDIO ---
 mixer.init()
 try:
-    mixer.music.load(r"music_background.mp3")
+    mixer.music.load(r"../music_background.mp3")
     mixer.music.set_volume(0.5)
     mixer.music.play(-1)
 except:
     pass
 
 try:
-    bounce_sound = mixer.Sound(r"bounce.mp3")
-    score_sound = mixer.Sound(r"score.mp3")
-    win_sound = mixer.Sound(r"win.mp3")
+    bounce_sound = mixer.Sound(r"../bounce.mp3")
+    score_sound = mixer.Sound(r"../score.mp3")
+    win_sound = mixer.Sound(r"../win.mp3")
     bounce_sound.set_volume(1.0)
     score_sound.set_volume(1.0)
     win_sound.set_volume(1.0)
