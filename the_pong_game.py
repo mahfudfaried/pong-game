@@ -57,7 +57,7 @@ def run_launcher(master_root, is_first_run):
         s = simpledialog.askinteger("Setup", "Winning Score (1-20):", parent=parent_window, minvalue=1, maxvalue=20)
         if s: setup_data["score"] = s
 
-        l = simpledialog.askstring("Setup", "Difficulty Level (easy/medium/hard):", parent=parent_window)
+        l = simpledialog.askstring("Setup", "Difficulty Level (1: easy, 2: medium, 3: hard):", parent=parent_window)
         if l: setup_data["level"] = l
 
         setup_data["ready"] = True
