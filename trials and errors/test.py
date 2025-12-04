@@ -6,7 +6,6 @@ import tkinter as tk
 from tkinter import messagebox
 import time
 
-# --- 1. OPTIMIZED AUDIO SETUP ---
 mixer.init()
 
 
@@ -21,7 +20,6 @@ def play_music():
 
 def load_sfx():
     try:
-        # Load sekaligus dalam satu baris
         return (mixer.Sound(f"{name}.mp3") for name in ["bounce", "score", "win"])
     except:
         class Dummy:
@@ -33,7 +31,6 @@ def load_sfx():
 bounce_sound, score_sound, win_sound = load_sfx()
 
 
-# --- 2. GAME LAUNCHER (UI TETAP MANUAL SESUAI REQUEST) ---
 def run_launcher(master_root, is_first_run):
     if is_first_run: play_music()
 
@@ -42,7 +39,6 @@ def run_launcher(master_root, is_first_run):
     launcher_win = tk.Toplevel(master_root)
     launcher_win.title("The Pong Game")
 
-    # UI Setup (Tetap Manual)
     w, h = 500, 520
     ws, hs = launcher_win.winfo_screenwidth(), launcher_win.winfo_screenheight()
     launcher_win.geometry(f"{w}x{h}+{int((ws - w) / 2)}+{int((hs - h) / 2)}")
@@ -53,14 +49,12 @@ def run_launcher(master_root, is_first_run):
     launcher_win.after_idle(launcher_win.attributes, '-topmost', False)
     launcher_win.focus_force()
 
-    # Vars
     var_mode = tk.StringVar(value="2p")
     var_p1 = tk.StringVar(value="Player 1")
     var_p2 = tk.StringVar(value="Player 2")
     var_score = tk.StringVar(value="5")
     var_level = tk.StringVar(value="easy")
 
-    # Frame 1: Welcome
     frm_welcome = tk.Frame(launcher_win, bg="black")
     tk.Label(frm_welcome, text="THE PONG GAME", font=("Press Start 2P", 24, "bold"), bg="black", fg="white").pack(
         pady=(100, 10))
@@ -77,7 +71,6 @@ def run_launcher(master_root, is_first_run):
     group_names = "©2025 E4 Group\n\nManda | Evan | Rio | Faried"
     tk.Label(frm_welcome, text=group_names, font=("Press Start 2P", 7), bg="black", fg="#555555").pack(pady=(20, 0))
 
-    # Frame 2: Setup
     frm_setup = tk.Frame(launcher_win, bg="black")
     tk.Label(frm_setup, text="PENGATURAN", font=("Press Start 2P", 20, "bold"), bg="black", fg="white").pack(
         pady=(15, 15))
@@ -85,7 +78,6 @@ def run_launcher(master_root, is_first_run):
     frm_form = tk.Frame(frm_setup, bg="black");
     frm_form.pack()
 
-    # Mode Radio Buttons (Manual)
     tk.Label(frm_form, text="Mode Permainan:", font=("Press Start 2P", 10), bg="black", fg="#acacac", anchor="w").pack(
         fill="x", pady=(5, 5))
     frm_radios_mode = tk.Frame(frm_form, bg="black");
@@ -101,7 +93,6 @@ def run_launcher(master_root, is_first_run):
                    font=("Press Start 2P", 10), bg="black", fg="white", selectcolor="#444444", activebackground="black",
                    activeforeground="white").pack(side="left", expand=True)
 
-    # Input Fields (Manual)
     def create_retro_entry(label_text, variable):
         tk.Label(frm_form, text=label_text, font=("Press Start 2P", 10), bg="black", fg="#acacac", anchor="w").pack(
             fill="x", pady=(10, 0))
@@ -112,7 +103,6 @@ def run_launcher(master_root, is_first_run):
     create_retro_entry("Nama Pemain B atau Bot (Kanan):", var_p2)
     create_retro_entry("Skor Maksimal:", var_score)
 
-    # Level Radio Buttons (Manual)
     tk.Label(frm_form, text="Level:", font=("Press Start 2P", 10), bg="black", fg="#acacac", anchor="w").pack(fill="x",
                                                                                                               pady=(15,
                                                                                                                     5))
@@ -142,7 +132,6 @@ def run_launcher(master_root, is_first_run):
     tk.Button(frm_setup, text="MAIN SEKARANG", font=("Press Start 2P", 12, "bold"), bg="white", fg="black", width=24,
               command=finish_setup).pack(pady=30)
 
-    # Display Logic
     frm_welcome.pack(fill="both", expand=True) if is_first_run else frm_setup.pack(fill="both", expand=True)
 
     def on_close():
@@ -153,7 +142,6 @@ def run_launcher(master_root, is_first_run):
     return setup_data
 
 
-# --- 3. OPTIMIZED LEVEL LOGIC ---
 def get_level_settings(c):
     c = c.lower() if c else "medium"
     if c in ["1", "easy", "mudah"]:
@@ -163,7 +151,6 @@ def get_level_settings(c):
     return "Medium", [-0.9, -0.6, 0.6, 0.9], 0.9, 2.0
 
 
-# --- 4. OPTIMIZED GAME ENGINE ---
 def start_game_session(window, config):
     p1, p2, mode = config["p1"][:10], config["p2"][:10], config["mode"]
     lvl_name, speeds, base_dx, p_spd = get_level_settings(config["level"])
@@ -177,7 +164,6 @@ def start_game_session(window, config):
     root = canvas.winfo_toplevel();
     root.resizable(False, False)
 
-    # Helper untuk membuat objek turtle
     def create_obj(shape, color, pos):
         obj = t.Turtle(shape);
         obj.speed(0);
@@ -206,7 +192,6 @@ def start_game_session(window, config):
     over_pen.hideturtle();
     over_pen.color("#acacac")
 
-    # Optimized Controls (Lambda)
     def set_dy(obj, val):
         obj.dy = val
 
@@ -230,23 +215,19 @@ def start_game_session(window, config):
         except:
             return False
 
-        # Bot Logic
         if mode == "1p":
             rp.dy = p_spd if rp.ycor() < ball.ycor() - 20 else (-p_spd if rp.ycor() > ball.ycor() + 20 else 0)
 
-        # Move Objects (Gabung logika paddle kiri/kanan)
         for p in [lp, rp]:
             if -240 < p.ycor() + p.dy < 250: p.sety(p.ycor() + p.dy)
         ball.setx(ball.xcor() + ball.dx);
         ball.sety(ball.ycor() + ball.dy)
 
-        # Border Check (Gabung atas/bawah pakai abs)
         if abs(ball.ycor()) > 290:
             ball.sety(290 if ball.ycor() > 0 else -290);
             ball.dy *= -1;
             bounce_sound.play()
 
-        # Score & Reset
         if abs(ball.xcor()) > 390:
             if ball.xcor() > 0:
                 sc_a += 1; winner = p1
@@ -261,7 +242,6 @@ def start_game_session(window, config):
             pen.write(f"{p1}: {sc_a}          {p2}: {sc_b}", align="center", font=("VT323", 24, "normal"))
             if max(sc_a, sc_b) >= config['score']: playing = False
 
-        # Collision (Area diperlebar sesuai request)
         if (330 < ball.xcor() < 360 and rp.ycor() - 55 < ball.ycor() < rp.ycor() + 55) or \
                 (-360 < ball.xcor() < -330 and lp.ycor() - 55 < ball.ycor() < lp.ycor() + 55):
             ball.dx *= -1;
@@ -275,7 +255,6 @@ def start_game_session(window, config):
     return messagebox.askyesno("Permainan Selesai", f"Selamat {winner} Menang!\n\nIngin main lagi?")
 
 
-# --- 5. MAIN PROGRAM ---
 def main():
     win = t.Screen();
     win.title("Memuat...")

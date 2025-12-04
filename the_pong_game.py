@@ -1,16 +1,16 @@
-import turtle as t
-import random
-from pygame import mixer
-import sys
-import tkinter as tk
-from tkinter import messagebox
-import time
+# The Pong Game
+# Developed by E4 Group
+import turtle as t # untuk merender grafik game
+import random # untuk mengacak arah gerak bola
+from pygame import mixer # untuk mengontrol audio
+import sys # untuk terminasi
+import tkinter as tk # untuk membuat UI konfigurasi awal
+from tkinter import messagebox #window pop up
+import time # untuk memberi jeda
 
-# --- 1. OPTIMIZED AUDIO SETUP ---
+# Setup Audio
 mixer.init()
-
-
-def play_music():
+def play_music(): # memutar musik background
     try:
         mixer.music.load(r"music_background.mp3")
         mixer.music.set_volume(0.5);
@@ -18,10 +18,10 @@ def play_music():
     except:
         pass
 
-
+# Sound effect
 def load_sfx():
     try:
-        # Load sekaligus dalam satu baris
+        # Load semua audio
         return (mixer.Sound(f"{name}.mp3") for name in ["bounce", "score", "win"])
     except:
         class Dummy:
@@ -33,7 +33,7 @@ def load_sfx():
 bounce_sound, score_sound, win_sound = load_sfx()
 
 
-# --- 2. GAME LAUNCHER (UI TETAP MANUAL SESUAI REQUEST) ---
+# Game launcher (konfigurasi awal permainan)
 def run_launcher(master_root, is_first_run):
     if is_first_run: play_music()
 
@@ -42,7 +42,7 @@ def run_launcher(master_root, is_first_run):
     launcher_win = tk.Toplevel(master_root)
     launcher_win.title("The Pong Game")
 
-    # UI Setup (Tetap Manual)
+    # UI Setup
     w, h = 500, 520
     ws, hs = launcher_win.winfo_screenwidth(), launcher_win.winfo_screenheight()
     launcher_win.geometry(f"{w}x{h}+{int((ws - w) / 2)}+{int((hs - h) / 2)}")
@@ -60,7 +60,7 @@ def run_launcher(master_root, is_first_run):
     var_score = tk.StringVar(value="5")
     var_level = tk.StringVar(value="easy")
 
-    # Frame 1: Welcome
+    # Welcome Screen
     frm_welcome = tk.Frame(launcher_win, bg="black")
     tk.Label(frm_welcome, text="THE PONG GAME", font=("Press Start 2P", 24, "bold"), bg="black", fg="white").pack(
         pady=(100, 10))
@@ -77,7 +77,7 @@ def run_launcher(master_root, is_first_run):
     group_names = "©2025 E4 Group\n\nManda | Evan | Rio | Faried"
     tk.Label(frm_welcome, text=group_names, font=("Press Start 2P", 7), bg="black", fg="#555555").pack(pady=(20, 0))
 
-    # Frame 2: Setup
+    # Konfigurasi awal permainan
     frm_setup = tk.Frame(launcher_win, bg="black")
     tk.Label(frm_setup, text="PENGATURAN", font=("Press Start 2P", 20, "bold"), bg="black", fg="white").pack(
         pady=(15, 15))
@@ -85,7 +85,7 @@ def run_launcher(master_root, is_first_run):
     frm_form = tk.Frame(frm_setup, bg="black");
     frm_form.pack()
 
-    # Mode Radio Buttons (Manual)
+    # Selector mode permainan
     tk.Label(frm_form, text="Mode Permainan:", font=("Press Start 2P", 10), bg="black", fg="#acacac", anchor="w").pack(
         fill="x", pady=(5, 5))
     frm_radios_mode = tk.Frame(frm_form, bg="black");
@@ -101,7 +101,7 @@ def run_launcher(master_root, is_first_run):
                    font=("Press Start 2P", 10), bg="black", fg="white", selectcolor="#444444", activebackground="black",
                    activeforeground="white").pack(side="left", expand=True)
 
-    # Input Fields (Manual)
+    # Kotak input nama pemain dan skor maksimal
     def create_retro_entry(label_text, variable):
         tk.Label(frm_form, text=label_text, font=("Press Start 2P", 10), bg="black", fg="#acacac", anchor="w").pack(
             fill="x", pady=(10, 0))
@@ -112,7 +112,7 @@ def run_launcher(master_root, is_first_run):
     create_retro_entry("Nama Pemain B atau Bot (Kanan):", var_p2)
     create_retro_entry("Skor Maksimal:", var_score)
 
-    # Level Radio Buttons (Manual)
+    # Selector level game
     tk.Label(frm_form, text="Level:", font=("Press Start 2P", 10), bg="black", fg="#acacac", anchor="w").pack(fill="x",
                                                                                                               pady=(15,
                                                                                                                     5))
@@ -142,7 +142,7 @@ def run_launcher(master_root, is_first_run):
     tk.Button(frm_setup, text="MAIN SEKARANG", font=("Press Start 2P", 12, "bold"), bg="white", fg="black", width=24,
               command=finish_setup).pack(pady=30)
 
-    # Display Logic
+    # Menampilkan welcome screen
     frm_welcome.pack(fill="both", expand=True) if is_first_run else frm_setup.pack(fill="both", expand=True)
 
     def on_close():
@@ -153,7 +153,7 @@ def run_launcher(master_root, is_first_run):
     return setup_data
 
 
-# --- 3. OPTIMIZED LEVEL LOGIC ---
+# Logika level game
 def get_level_settings(c):
     c = c.lower() if c else "medium"
     if c in ["1", "easy", "mudah"]:
@@ -163,7 +163,7 @@ def get_level_settings(c):
     return "Medium", [-0.9, -0.6, 0.6, 0.9], 0.9, 2.0
 
 
-# --- 4. OPTIMIZED GAME ENGINE ---
+# Memulai sesi game
 def start_game_session(window, config):
     p1, p2, mode = config["p1"][:10], config["p2"][:10], config["mode"]
     lvl_name, speeds, base_dx, p_spd = get_level_settings(config["level"])
@@ -206,7 +206,7 @@ def start_game_session(window, config):
     over_pen.hideturtle();
     over_pen.color("#acacac")
 
-    # Optimized Controls (Lambda)
+    # Kontrol
     def set_dy(obj, val):
         obj.dy = val
 
@@ -223,30 +223,30 @@ def start_game_session(window, config):
         window.onkeyrelease(lambda: set_dy(rp, 0), "Down")
 
     sc_a, sc_b, playing, winner = 0, 0, True, ""
-
+    # Logika utama game
     while playing:
         try:
             window.update()
         except:
             return False
 
-        # Bot Logic
+        # Algoritma bot
         if mode == "1p":
             rp.dy = p_spd if rp.ycor() < ball.ycor() - 20 else (-p_spd if rp.ycor() > ball.ycor() + 20 else 0)
 
-        # Move Objects (Gabung logika paddle kiri/kanan)
+        # Gerak bola dan paddle
         for p in [lp, rp]:
             if -240 < p.ycor() + p.dy < 250: p.sety(p.ycor() + p.dy)
         ball.setx(ball.xcor() + ball.dx);
         ball.sety(ball.ycor() + ball.dy)
 
-        # Border Check (Gabung atas/bawah pakai abs)
+        # Cek tumbukan
         if abs(ball.ycor()) > 290:
             ball.sety(290 if ball.ycor() > 0 else -290);
             ball.dy *= -1;
             bounce_sound.play()
 
-        # Score & Reset
+        # Skor dan reset
         if abs(ball.xcor()) > 390:
             if ball.xcor() > 0:
                 sc_a += 1; winner = p1
@@ -261,7 +261,7 @@ def start_game_session(window, config):
             pen.write(f"{p1}: {sc_a}          {p2}: {sc_b}", align="center", font=("VT323", 24, "normal"))
             if max(sc_a, sc_b) >= config['score']: playing = False
 
-        # Collision (Area diperlebar sesuai request)
+        # Area tumbukan
         if (330 < ball.xcor() < 360 and rp.ycor() - 55 < ball.ycor() < rp.ycor() + 55) or \
                 (-360 < ball.xcor() < -330 and lp.ycor() - 55 < ball.ycor() < lp.ycor() + 55):
             ball.dx *= -1;
@@ -275,7 +275,7 @@ def start_game_session(window, config):
     return messagebox.askyesno("Permainan Selesai", f"Selamat {winner} Menang!\n\nIngin main lagi?")
 
 
-# --- 5. MAIN PROGRAM ---
+# Fungsi utama program
 def main():
     win = t.Screen();
     win.title("Memuat...")
