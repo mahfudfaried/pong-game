@@ -24,7 +24,7 @@ def load_sfx():
         # Load semua audio
         return (mixer.Sound(f"{name}.mp3") for name in ["bounce", "score", "win"])
     except:
-        class Dummy:
+        class Dummy: # jika file audio tidak ditemukam
             def play(self): pass
 
         return Dummy(), Dummy(), Dummy()
@@ -38,7 +38,7 @@ def run_launcher(master_root, is_first_run):
     if is_first_run: play_music()
 
     setup_data = {"mode": "2p", "p1": "Player 1", "p2": "Player 2", "score": 5, "level": "easy", "ready": False}
-
+    # Membuat window launcher
     launcher_win = tk.Toplevel(master_root)
     launcher_win.title("The Pong Game")
 
@@ -66,14 +66,14 @@ def run_launcher(master_root, is_first_run):
         pady=(100, 10))
     tk.Label(frm_welcome, text="Developed with Love by E4 Group", font=("Press Start 2P", 8), bg="black",
              fg="#acacac").pack(pady=(0, 60))
-
+    # menuju konfigurasi
     def go_to_setup():
         frm_welcome.pack_forget();
         frm_setup.pack(fill="both", expand=True)
-
+    # tombol untuk memulai permainan
     tk.Button(frm_welcome, text="MULAI", font=("Press Start 2P", 12, "bold"), bg="white", fg="black", width=15,
               command=go_to_setup).pack(pady=(100, 0))
-
+    # teks di bawah tombol
     group_names = "©2025 E4 Group\n\nManda | Evan | Rio | Faried"
     tk.Label(frm_welcome, text=group_names, font=("Press Start 2P", 7), bg="black", fg="#555555").pack(pady=(20, 0))
 
@@ -90,23 +90,23 @@ def run_launcher(master_root, is_first_run):
         fill="x", pady=(5, 5))
     frm_radios_mode = tk.Frame(frm_form, bg="black");
     frm_radios_mode.pack(fill="x")
-
+    # mengubah nama default player 2 berdasarkan mode permainan
     def update_p2_name():
         var_p2.set("Bot" if var_mode.get() == "1p" else "Player 2")
-
+    #pilihan mode permainan
     tk.Radiobutton(frm_radios_mode, text="Lawan teman", variable=var_mode, value="2p", command=update_p2_name,
                    font=("Press Start 2P", 10), bg="black", fg="white", selectcolor="#444444", activebackground="black",
-                   activeforeground="white").pack(side="left", expand=True)
+                   activeforeground="white").pack(side="left", expand=True) #lawan teman
     tk.Radiobutton(frm_radios_mode, text="Lawan bot", variable=var_mode, value="1p", command=update_p2_name,
                    font=("Press Start 2P", 10), bg="black", fg="white", selectcolor="#444444", activebackground="black",
-                   activeforeground="white").pack(side="left", expand=True)
+                   activeforeground="white").pack(side="left", expand=True) #lawan bot
 
     # Kotak input nama pemain dan skor maksimal
     def create_retro_entry(label_text, variable):
         tk.Label(frm_form, text=label_text, font=("Press Start 2P", 10), bg="black", fg="#acacac", anchor="w").pack(
-            fill="x", pady=(10, 0))
+            fill="x", pady=(10, 0)) #box input
         tk.Entry(frm_form, textvariable=variable, font=("Press Start 2P", 10), bg="#222222", fg="white",
-                 insertbackground="white", relief="flat").pack(fill="x", ipady=5)
+                 insertbackground="white", relief="flat").pack(fill="x", ipady=5) #form
 
     create_retro_entry("Nama Pemain A (Kiri):", var_p1)
     create_retro_entry("Nama Pemain B atau Bot (Kanan):", var_p2)
@@ -118,17 +118,17 @@ def run_launcher(master_root, is_first_run):
                                                                                                                     5))
     frm_radios = tk.Frame(frm_form, bg="black");
     frm_radios.pack(fill="x")
-
+    # pilihan mode permainan
     tk.Radiobutton(frm_radios, text="Easy", variable=var_level, value="easy", font=("Press Start 2P", 10), bg="black",
                    fg="white", selectcolor="#444444", activebackground="black", activeforeground="white").pack(
-        side="left", expand=True)
+        side="left", expand=True) #easy
     tk.Radiobutton(frm_radios, text="Medium", variable=var_level, value="medium", font=("Press Start 2P", 10),
                    bg="black", fg="white", selectcolor="#444444", activebackground="black",
-                   activeforeground="white").pack(side="left", expand=True)
+                   activeforeground="white").pack(side="left", expand=True) #medium
     tk.Radiobutton(frm_radios, text="Hard", variable=var_level, value="hard", font=("Press Start 2P", 10), bg="black",
                    fg="white", selectcolor="#444444", activebackground="black", activeforeground="white").pack(
-        side="left", expand=True)
-
+        side="left", expand=True) #hard
+    # update data setelah input dari player
     def finish_setup():
         setup_data.update({"mode": var_mode.get(), "p1": var_p1.get() or "Player 1", "p2": var_p2.get() or "Bot",
                            "level": var_level.get()})
@@ -138,13 +138,13 @@ def run_launcher(master_root, is_first_run):
             setup_data["score"] = 5
         setup_data["ready"] = True;
         launcher_win.destroy()
-
+    #tombol untuk memulai permainan
     tk.Button(frm_setup, text="MAIN SEKARANG", font=("Press Start 2P", 12, "bold"), bg="white", fg="black", width=24,
               command=finish_setup).pack(pady=30)
 
     # Menampilkan welcome screen
     frm_welcome.pack(fill="both", expand=True) if is_first_run else frm_setup.pack(fill="both", expand=True)
-
+    # Menutup window launcher
     def on_close():
         launcher_win.destroy(); master_root.destroy(); sys.exit()
 
@@ -167,7 +167,7 @@ def get_level_settings(c):
 def start_game_session(window, config):
     p1, p2, mode = config["p1"][:10], config["p2"][:10], config["mode"]
     lvl_name, speeds, base_dx, p_spd = get_level_settings(config["level"])
-
+    #  inisiasi window
     window.clearscreen();
     window.title(f"Pong: {p1} vs {p2} ({lvl_name})")
     window.bgcolor("black");
@@ -187,13 +187,13 @@ def start_game_session(window, config):
         obj.goto(pos);
         obj.dy = 0 if shape == "square" else None
         return obj
-
+    # membuat paddle dan bola
     lp = create_obj("square", "#acacac", (-350, 0))
     rp = create_obj("square", "#acacac", (350, 0))
     ball = create_obj("circle", "#acacac", (0, 0))
     ball.dx = base_dx * random.choice([1, -1]);
     ball.dy = random.choice(speeds)
-
+    # Pen untuk menampilkan skor
     pen = t.Turtle();
     pen.speed(0);
     pen.color("#acacac");
@@ -201,21 +201,21 @@ def start_game_session(window, config):
     pen.hideturtle();
     pen.goto(0, 260)
     pen.write(f"{p1}: 0          {p2}: 0", align="center", font=("VT323", 24, "normal"))
-
+    # Pen untuk menampilkan hasil akhir
     over_pen = t.Turtle();
     over_pen.hideturtle();
     over_pen.color("#acacac")
 
-    # Kontrol
+    # Fungsi untuk mengatur kecepatan paddle
     def set_dy(obj, val):
         obj.dy = val
-
+    # kontol untuk player 1
     window.listen()
     window.onkeypress(lambda: set_dy(lp, p_spd), "w");
     window.onkeypress(lambda: set_dy(lp, -p_spd), "s")
     window.onkeyrelease(lambda: set_dy(lp, 0), "w");
     window.onkeyrelease(lambda: set_dy(lp, 0), "s")
-
+    # kontrol untuk player 2
     if mode == "2p":
         window.onkeypress(lambda: set_dy(rp, p_spd), "Up");
         window.onkeypress(lambda: set_dy(rp, -p_spd), "Down")
@@ -266,7 +266,7 @@ def start_game_session(window, config):
                 (-360 < ball.xcor() < -330 and lp.ycor() - 55 < ball.ycor() < lp.ycor() + 55):
             ball.dx *= -1;
             bounce_sound.play()
-
+    # Menghapus bola dan menampilkan pemenang
     ball.hideturtle();
     win_sound.play()
     over_pen.write(f"MENANG!\n{winner} Juara!", align="center", font=("Press Start 2P", 18, "bold"))
@@ -281,7 +281,7 @@ def main():
     win.title("Memuat...")
     root = win.getcanvas().winfo_toplevel();
     first = True
-    while True:
+    while True: # Menampilkan launcher
         root.withdraw();
         cfg = run_launcher(root, first)
         if not cfg["ready"]: break
@@ -294,5 +294,5 @@ def main():
     except:
         pass
 
-
+# Jalankan program
 if __name__ == "__main__": main()
